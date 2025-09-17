@@ -13,13 +13,12 @@ def getinfom(name: str):
     return {"message": f"welcome to the world : {name}"}
 
 @app.post("/createuser")
-def create_user_route(name: str, phone: str, age: int):
-    ans = create_info(name, phone, age)   # 👈 use helper function
+def create_user_route(name: str, age: int):
+    ans = create_info(name, age)   # 👈 use helper function
     if ans:
         return {
             "status": "user created successfully",
             "name": name,
-            "phone": phone,
             "age": age
         }
     else:
