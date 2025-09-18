@@ -1,35 +1,60 @@
 import mysql.connector
+import json
 
+# ✅ DB Connection
+def establish_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="root",
+        database="user"
+    )
+
+# ✅ Create new table for JSON method
+def create_new_user_table():
+    conn = establish_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS new_user_info (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            first_name VARCHAR(100),
+            age INT,
+            gender VARCHAR(20),
+            country VARCHAR(100)
+        )
+    """)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# ✅ Old Method (insert into old table: user_info)
 def create_info(name, age):
     try:
-        user_dict = dict()
-        user_dict['name'] = name
-        user_dict['age'] = age
-
-        # PUT THIS ENTRY IN DB
         conn = establish_connection()
         cursor = conn.cursor()
-        insert_query = "INSERT INTO user_info (name, age) VALUES (%s, %s)"
-        cursor.execute(insert_query, (user_dict['name'], user_dict['age']))
+        query = "INSERT INTO user_info (first_name, age) VALUES (%s, %s)"
+        cursor.execute(query, (name, age))
         conn.commit()
         cursor.close()
         conn.close()
-
         return True
     except Exception as e:
-        print("Error in creating user:", e)
+        print("❌ Error in create_info:", e)
         return False
 
-def create_user(user_dict):
-    pass
-
-def establish_connection():
-    # create a connection to the database
-    conn = mysql.connector.connect(
-        host='localhost',
-        user='root',
-        password='root',
-        database='user'
-    )
-    return conn
-
+# ✅ New Method (insert into new table: new_user_info)
+def create_user(user_json):
+    try:
+        user = json.loads(user_json)  # parse JSON
+        conn = establish_connection()
+        cursor = conn.cursor()
+        query = "INSERT INTO new_user_info (first_name, age, gender, country) VALUES (%s, %s, %s, %s)"
+        cursor.execute(query, (user["first_name"], user["age"], user["gender"], user["country"]))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print("❌ Error in create_user:", e)
+        return False
+    
