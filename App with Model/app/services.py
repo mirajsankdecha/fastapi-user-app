@@ -1,27 +1,29 @@
+# Import pickle to load saved ML model and label encoder
 import pickle
+
+# Import numpy for handling numerical arrays
 import numpy as np
-from pathlib import Path
 
+# Load the trained ML model from a file
+with open(r'C:/Users/Lenovo/Downloads/ml_project/model/best_iris_model.pkl', 'rb') as f:
+    model = pickle.load(f)  # This is your trained classifier (e.g., RandomForest)
 
-# Attempt to load the label encoder from the project's model directory
-base_dir = Path(__file__).resolve().parents[1]
-label_encoder_path = base_dir / "model" / "label_encoder.pkl"
-if not label_encoder_path.exists():
-    raise FileNotFoundError(f"Label encoder not found at {label_encoder_path}")
-
-with label_encoder_path.open("rb") as f:
+# Load the label encoder from a file
+# This converts numeric predictions back to actual species names
+with open(r'C:/Users/Lenovo/Downloads/ml_project/model/label_encoder.pkl', 'rb') as f:
     label_encoder = pickle.load(f)
 
-
-# Function to make predictions
-def predict_iris(model, data):
-    # Get the feature values from the request
+# Function to make predictions on new Iris data
+def predict_iris(data):
+    # Convert the input data (Pydantic model) into a 2D numpy array
+    # [[sepal_length, sepal_width, petal_length, petal_width]]
     features = np.array([[data.sepal_length, data.sepal_width, data.petal_length, data.petal_width]])
-
-    # Predict the species using the loaded model (model returns a numeric label)
+    
+    # Use the loaded model to predict the class (numeric label)
     prediction = model.predict(features)
-
-    # Convert the numeric label back to the species name using the label encoder
+    
+    # Convert the numeric label back to species name using label encoder
     predicted_species = label_encoder.inverse_transform([prediction[0]])[0]
-
-    return predicted_species  # Return the predicted species name
+    
+    # Return the predicted species as a string
+    return predicted_species

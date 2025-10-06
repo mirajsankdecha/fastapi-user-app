@@ -1,29 +1,24 @@
-from fastapi import APIRouter, Depends, Request
-from pydantic import BaseModel
+# Import APIRouter to create a modular set of routes (like a mini-app)
+from fastapi import APIRouter
+
+# Import the Pydantic schema for input validation
+# IrisInput defines the structure of input data (e.g., sepal/petal lengths and widths)
+from app.schema import IrisInput
+
+# Import the service function that actually makes the ML prediction
 from app.services import predict_iris
 
-# Define the APIRouter instance
+# Create a router instance
+# This allows you to define routes separately from the main app
 router = APIRouter()
 
-
-# Define the input data model using Pydantic
-class IrisInput(BaseModel):
-    sepal_length: float
-    sepal_width: float
-    petal_length: float
-    petal_width: float
-
-
-def get_model_from_app(request: Request):
-    # Access the model saved on app.state by the startup event
-    model = getattr(request.app.state, "model", None)
-    if model is None:
-        raise RuntimeError("Model not loaded on app.state")
-    return model
-
-
+# Define a POST endpoint at "/predict"
+# This means clients will send data to this URL to get a prediction
 @router.post("/predict")
-def predict_iris_flower(iris_input: IrisInput, model=Depends(get_model_from_app)):
-    # Call the predict function from services, passing the app model
-    predicted_species = predict_iris(model, iris_input)
+def predict_iris_flower(iris_input: IrisInput):
+    # FastAPI automatically converts and validates the incoming JSON into an IrisInput object
+    # Call the service function, passing in the validated input
+    predicted_species = predict_iris(iris_input)
+    
+    # Return the prediction as a JSON response
     return {"predicted_species": predicted_species}
